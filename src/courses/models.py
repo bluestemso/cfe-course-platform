@@ -2,6 +2,7 @@ import helpers
 from django.db import models
 from cloudinary.models import CloudinaryField
 
+
 helpers.cloudinary_init()
 
 # Create your models here.
