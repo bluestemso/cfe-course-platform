@@ -1,1 +1,1 @@
-Left off at 1:27:28, about to implement model methods for resizing images
+Left off coding at 2:22:43
