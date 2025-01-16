@@ -45,7 +45,7 @@ def get_public_id_prefix(instance):
         return f'{model_name_slug}'
     return f'{model_name_slug}/{public_id}'
 
-def get_display_name(instance, *args, **kwargs):
+def get_display_name(instance, is_thumbnail=False, *args, **kwargs):
     if hasattr(instance, 'get_display_name'):
         return instance.get_display_name()
     elif hasattr(instance, 'title'):
@@ -53,6 +53,8 @@ def get_display_name(instance, *args, **kwargs):
     model_class = instance.__class__
     model_name = model_class.__name__
     return f'{model_name} Upload'
+
+# get_thumbnail_display_name = lambda instance: get_display_name(instance, is_thumbnail=True)
 
 class Course(models.Model):
     title = models.CharField(max_length=120)
@@ -98,35 +100,25 @@ class Course(models.Model):
 
     @property
     def image_admin_url(self):
-        if not self.image:
-            return ""
-        image_options = {
-            'width': 200,
-        }
-        url = self.image.build_url(**image_options)
-        return url
+        return helpers.get_cloudinary_image_object(
+            self, 
+            field_name="image", 
+            as_html=False,
+            width=200)
     
     def get_image_thumbnail(self, as_html=False, width=500):
-        if not self.image:
-            return ""
-        image_options = {
-            'width': width,
-        }
-        if as_html:
-            return self.image.image(**image_options)
-        url = self.image.build_url(**image_options)
-        return url
-    
-    def get_image_detail(self, width=750):
-        if not self.image:
-            return ""
-        image_options = {
-            'width': width,
-        }
-        if as_html:
-            return self.image.image(**image_options)
-        url = self.image.build_url(**image_options)
-        return url
+        return helpers.get_cloudinary_image_object(
+            self, 
+            field_name="image", 
+            as_html=as_html,
+            width=width)
+
+    def get_image_detail(self, as_html=False, width=750):
+        return helpers.get_cloudinary_image_object(
+            self, 
+            field_name="image", 
+            as_html=as_html,
+            width=width)
     
     def __str__(self):
         return self.title
@@ -136,8 +128,20 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     public_id = models.CharField(max_length=130, blank=True, null=True)
-    thumbnail = CloudinaryField('image', blank=True, null=True)
-    video = CloudinaryField('video', blank=True, null=True, resource_type='video')
+    thumbnail = CloudinaryField('image', 
+                public_id_prefix=get_public_id_prefix, 
+                display_name=get_display_name,
+                tags=['lesson', 'thumbnail'],
+                blank=True, 
+                null=True)
+    video = CloudinaryField('video', 
+            public_id_prefix=get_public_id_prefix, 
+            display_name=get_display_name,
+            type='private',
+            tags=['lesson', 'video'],
+            blank=True, 
+            null=True, 
+            resource_type='video')
     order = models.IntegerField(default=0)
     can_preview = models.BooleanField(default=False, help_text="If user does not have access to the course, can they preview the lesson?")
     status = models.CharField(
@@ -154,3 +158,13 @@ class Lesson(models.Model):
         if self.public_id == "" or self.public_id is None:
             self.public_id = generate_public_id(self)
         super().save(*args, **kwargs)
+
+    @property
+    def path(self):
+        course_path = self.course.path
+        if course_path.endswith('/'):
+            course_path = course_path[:-1]
+        return f'{course_path}/lessons/{self.public_id}'
+
+    def get_display_name(self):
+        return f'{self.title} - {self.course.get_display_name()}'
