@@ -2,3 +2,4 @@ Django>=5.1,<5.2
 Pillow
 cloudinary
 python-decouple
+django-ses

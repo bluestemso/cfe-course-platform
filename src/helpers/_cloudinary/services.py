@@ -29,7 +29,7 @@ def get_cloudinary_video_object(instance,
                                 as_html=False,
                                 width=None,
                                 height=None,
-                                sign_url=False, # for private videos
+                                sign_url=True,  # Changed to True for private videos
                                 fetch_format="auto",
                                 quality="auto",
                                 controls=True,
@@ -58,6 +58,10 @@ def get_cloudinary_video_object(instance,
         template_name = "videos/snippets/embed.html"
         tmpl = get_template(template_name)
         cloud_name = settings.CLOUDINARY_CLOUD_NAME
-        _html = tmpl.render({'video_url': url, 'cloud_name': cloud_name})
+        _html = tmpl.render({
+            'video_url': url, 
+            'cloud_name': cloud_name,
+            'video_id': f'video-{instance.public_id}'
+        })
         return _html
     return url

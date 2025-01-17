@@ -7,7 +7,7 @@ from .models import Course, Lesson
 
 class LessonInline(admin.StackedInline):
     model = Lesson
-    fields = ['title', 'public_id', 'description', 'thumbnail', 'video', 'order', 'can_preview', 'display_image', 'display_video']
+    fields = ['title', 'public_id', 'description', 'status', 'thumbnail', 'video', 'order', 'can_preview', 'display_image', 'display_video']
     readonly_fields = ['updated_at', 'public_id', 'display_image', 'display_video']
     extra = 0
 

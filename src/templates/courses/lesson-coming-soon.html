@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>{{ object.title }}</h1>
+
+{% if object.is_coming_soon %}
+<p class="text-gray-500">Coming Soon</p>
+{% endif %}
+
+{% endblock content %}
